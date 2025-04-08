@@ -3,6 +3,18 @@
 
 #include "common.h"
 
+void naredi_cmd_render(Str_Array cmd) {
+    da_foreach(&cmd, char*, arg) {
+        if (strchr(*arg, ' ') != NULL) {
+            printf("'%s'", *arg);
+        } else {
+            printf("%s", *arg);
+        }
+        printf(" ");
+    }
+    printf("\n");
+}
+
 Naredi_Small_String naredi_small_string_from_cstr(const char* str) {
     Naredi_Small_String ss = {0};
     for (const char* p = str; *p != 0; ++p) {
@@ -28,6 +40,7 @@ Naredi_Small_String naredi_small_string_from_sized(const char* start, int len) {
 }
 
 // TODO: we always allocate max size of string, so we "leak" some memory
+// TODO: use arenas
 char* naredi_small_string_to_cstr(Naredi_Small_String string) {
     char* copy = malloc(sizeof(string.value));
     memcpy(copy, string.value, sizeof(string.value));

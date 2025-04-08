@@ -26,6 +26,13 @@
 #define da_foreach(da, Type, ptr) for (Type* ptr = (da)->items; ptr < (da)->items + (da)->count; ptr++)
 
 typedef struct {
+    char** items;
+    size_t count, capacity;
+}Str_Array;
+
+void naredi_cmd_render(Str_Array cmd);
+
+typedef struct {
     char value[128];
 }Naredi_Small_String;
 
@@ -36,5 +43,6 @@ typedef struct {
 
 Naredi_Small_String naredi_small_string_from_cstr(const char* str);
 Naredi_Small_String naredi_small_string_from_sized(const char* start, int len);
+char* naredi_small_string_to_cstr(Naredi_Small_String string);
 
 #endif // COMMON_H
