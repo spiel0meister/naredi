@@ -14,7 +14,6 @@
 
 #define defer(expr) for (int i = 0; i < 1; (i++, (expr)))
 
-#define da_free(da) (free((da)->items), (da)->items = NULL, (da)->count = 0)
 #define da_append(da, item) do { \
         if ((da)->count >= (da)->capacity) { \
             if ((da)->capacity == 0) (da)->capacity = 8; \
@@ -23,6 +22,8 @@
         } \
         (da)->items[(da)->count++] = (item); \
     } while (0)
+#define da_clear(da) ((da)->count = 0)
+#define da_free(da) (free((da)->items), (da)->items = NULL, (da)->count = 0)
 #define da_foreach(da, Type, ptr) for (Type* ptr = (da)->items; ptr < (da)->items + (da)->count; ptr++)
 
 typedef struct {
