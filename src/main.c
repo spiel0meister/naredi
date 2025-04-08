@@ -16,6 +16,9 @@
 #include "lexer.c"
 #include "rule.c"
 
+#define FLAG_IMPLEMENTATION
+#include "external/flag.h"
+
 #define NAREDI_VERSION "0.0.1"
 
 char* naredi_read_file(const char* filepath, int* out_size) {
@@ -41,9 +44,37 @@ char* naredi_read_file(const char* filepath, int* out_size) {
     return content;
 }
 
-int main(void) {
+void usage(FILE* f) {
+    fprintf(f, "%s [OPTIONS]\n", flag_program_name());
+    flag_print_options(f);
+}
+
+// TODO: multiprocessing
+// TODO: creating variables
+// TODO: if-elif-else, foreach, etc.
+int main(int argc, char** argv) {
+    bool* help = flag_bool("help", false, "Display this help message");
+    bool* version = flag_bool("version", false, "Display the version");
+    char** naredifile = flag_str("naredi", "Naredifile", "Path to Naredifile");
+
+    if (!flag_parse(argc, argv)) {
+        eprintf("Couldn't parse args\n");
+        flag_print_error(stderr);
+        return 1;
+    }
+
+    if (*help) {
+        usage(stdout);
+        return 0;
+    }
+
+    if (*version) {
+        printf("%s v%s\n", flag_program_name(), NAREDI_VERSION);
+        return 0;
+    }
+
     int size;
-    char* content = naredi_read_file("Naredifile", &size);
+    char* content = naredi_read_file(*naredifile, &size);
     defer(free(content)) {
         Naredi_Lexer lexer = {
             .start = content,
