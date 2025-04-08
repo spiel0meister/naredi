@@ -1,2 +1,5 @@
+naredi.release: src/main.c
+    gcc -Wall -Wextra -Werror -Ofast -static -o $out $in
+
 naredi: src/main.c
-    gcc -o $out $in
+    gcc -Wall -Wextra -Werror -o $out $in
