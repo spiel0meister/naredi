@@ -1,2 +1,2 @@
-naredi-in-naredi: src/main.c
+naredi: src/main.c
     gcc -o $out $in
