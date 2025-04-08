@@ -37,7 +37,8 @@ char* naredi_read_file(const char* filepath, int* out_size) {
     
     if (out_size != NULL) *out_size = n;
 
-    fread(content, 1, n, f);
+    int this_should_be_unused_but_gcc_is_bugging_me = fread(content, 1, n, f);
+    unused(this_should_be_unused_but_gcc_is_bugging_me);
     content[n] = 0;
 
     fclose(f);
@@ -84,10 +85,11 @@ int main(int argc, char** argv) {
 
         Naredi_Rules rules = {0};
 
-        Naredi_Rule rule = {0};
-        while (naredi_parse_rule(&lexer, &rule)) {
+        do {
+            Naredi_Rule rule = {0};
+            if (!naredi_parse_rule(&lexer, &rule)) break;
             da_append(&rules, rule);
-        }
+        } while (true);
 
         da_foreach(&rules, Naredi_Rule, rule) {
             pid_t pid = naredi_rule_start(*rule);

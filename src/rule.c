@@ -16,29 +16,36 @@ void naredi_rule_destroy(Naredi_Rule* rule) {
 }
 
 bool naredi_parse_rule(Naredi_Lexer* lexer, Naredi_Rule* out_rule) {
-    Naredi_Token t = {0};
-    if (!naredi_lexer_next(lexer, &t)) return false;
+    do {
+        Naredi_Token t = {0};
+        if (!naredi_lexer_next(lexer, &t)) return false;
 
-    if (t.type == TK_LITERAL) {
-        out_rule->out = t.value;
-        if (!naredi_lexer_expect(lexer, TK_COLON, &t)) return false;
-
-        while (naredi_lexer_next(lexer, &t) && t.type != TK_NEWLINE) {
-            da_append(&out_rule->in, t.value);
-        }
-
-        if (naredi_lexer_next(lexer, &t)) {
-            da_append(&out_rule->cmd, t.value);
+        if (t.type == TK_LITERAL) {
+            out_rule->out = t.value;
+            if (!naredi_lexer_expect(lexer, TK_COLON, &t)) return false;
 
             while (naredi_lexer_next(lexer, &t) && t.type != TK_NEWLINE) {
-                da_append(&out_rule->cmd, t.value);
+                da_append(&out_rule->in, t.value);
             }
-        }
-    } else {
-        eprintf("%s\n", naredi_token_type_to_str(t.type));
-    }
 
-    return true;
+            if (naredi_lexer_next(lexer, &t)) {
+                da_append(&out_rule->cmd, t.value);
+
+                while (naredi_lexer_next(lexer, &t) && t.type != TK_NEWLINE) {
+                    da_append(&out_rule->cmd, t.value);
+                }
+            }
+
+            return true;
+        } else if (t.type == TK_NEWLINE) {
+            // ignore
+        } else {
+            eprintf("Unexpected %s\n", naredi_token_type_to_str(t.type));
+            return false;
+        }
+    } while (true);
+
+    return false;
 }
 
 pid_t naredi_rule_start(Naredi_Rule rule) {
