@@ -51,7 +51,6 @@ void usage(FILE* f) {
     flag_print_options(f);
 }
 
-// TODO: multiprocessing
 // TODO: creating variables
 // TODO: if-elif-else, foreach, etc.
 int main(int argc, char** argv) {
