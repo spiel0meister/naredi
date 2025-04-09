@@ -61,7 +61,16 @@ bool naredi_parse_rule(Naredi_Lexer* lexer, Naredi_Rule* out_rule) {
     return false;
 }
 
-pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rule rule) {
+Naredi_Rule* naredi_find_rule_for_out(Naredi_Rules* rules, Naredi_Small_String out) {
+    da_foreach(rules, Naredi_Rule, rule) {
+        if (strcmp(rule->out.value, out.value) == 0) {
+            return rule;
+        }
+    }
+    return NULL;
+}
+
+pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rules* rules, Naredi_Rule rule) {
     if (jobs->count >= procs_to_use) 
         if (!naredi_jobs_wait(jobs)) return -1;
 
@@ -71,6 +80,9 @@ pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rule rule
         if (arg->value[0] == '$') {
             if (strcmp(arg->value, "$in") == 0) {
                 da_foreach(&rule.in, Naredi_Small_String, in) {
+                    Naredi_Rule* dep_rule = naredi_find_rule_for_out(rules, *in);
+                    if (dep_rule != NULL)
+                        if (naredi_rule_start(jobs, procs_to_use, rules, *dep_rule) < 0) return -1;
                     da_append(&copy, naredi_small_string_to_cstr(*in));
                 }
             } else if (strcmp(arg->value, "$out") == 0) {

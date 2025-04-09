@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
     bool* version = flag_bool("version", false, "Display the version");
     size_t* procs_to_use = flag_size("proc", procs_count + 1, "Processors to use");
     char** naredifile = flag_str("naredi", "Naredifile", "Path to Naredifile");
+    char** rule_target = flag_str("rule", NULL, "Rule to do");
 
     if (!flag_parse(argc, argv)) {
         eprintf("Couldn't parse args\n");
@@ -94,13 +95,23 @@ int main(int argc, char** argv) {
             da_append(&rules, rule);
         } while (true);
 
+        if (rules.count == 0) break;
+
+        Naredi_Rule* rule_to_do = NULL;
+        if (*rule_target == NULL) {
+            rule_to_do = &rules.items[0];
+        } else {
+            rule_to_do = naredi_find_rule_for_out(&rules, naredi_small_string_from_cstr(*rule_target));
+            if (rule_to_do == NULL) {
+                eprintf("Rule %s does not exist\n", *rule_target);
+                return 1;
+            }
+        }
+
         Naredi_Jobs jobs = {0};
         defer(da_free(&jobs)) {
-            da_foreach(&rules, Naredi_Rule, rule) {
-                pid_t pid = naredi_rule_start(&jobs, *procs_to_use, *rule);
-                if (pid == -1) return 1;
-            }
-
+            pid_t pid = naredi_rule_start(&jobs, *procs_to_use, &rules, *rule_to_do);
+            if (pid == -1) return 1;
             if (!naredi_jobs_wait(&jobs)) return 1;
         }
 
