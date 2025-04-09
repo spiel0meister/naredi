@@ -20,7 +20,7 @@
 #define FLAG_IMPLEMENTATION
 #include "external/flag.h"
 
-#define NAREDI_VERSION "0.0.2"
+#define NAREDI_VERSION "0.0.3"
 
 char* naredi_read_file(const char* filepath, int* out_size) {
     FILE* f = fopen(filepath, "rb");
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
         Naredi_Jobs jobs = {0};
         defer(da_free(&jobs)) {
             pid_t pid = naredi_rule_start(&jobs, *procs_to_use, &rules, *rule_to_do);
-            if (pid == -1) return 1;
+            if (pid < 0) return 1;
             if (!naredi_jobs_wait(&jobs)) return 1;
         }
 
