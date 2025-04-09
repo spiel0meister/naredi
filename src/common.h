@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <stdio.h>
+#include <assert.h>
 #include <stddef.h>
 
 #define eprintf(fmt, ...) fprintf(stderr, fmt __VA_OPT__(,) __VA_ARGS__)
@@ -25,6 +26,7 @@
 #define da_clear(da) ((da)->count = 0)
 #define da_free(da) (free((da)->items), (da)->items = NULL, (da)->count = 0)
 #define da_foreach(da, Type, ptr) for (Type* ptr = (da)->items; ptr < (da)->items + (da)->count; ptr++)
+#define da_remove(da, i) (assert(i < (da)->count), (da)->items[i] = (da)->items[--(da)->count])
 
 typedef struct {
     char** items;

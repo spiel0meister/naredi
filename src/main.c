@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/sysinfo.h>
 
 #include "lexer.h"
 #include "rule.h"
@@ -54,8 +55,11 @@ void usage(FILE* f) {
 // TODO: creating variables
 // TODO: if-elif-else, foreach, etc.
 int main(int argc, char** argv) {
+    size_t procs_count = get_nprocs();
+
     bool* help = flag_bool("help", false, "Display this help message");
     bool* version = flag_bool("version", false, "Display the version");
+    size_t* procs_to_use = flag_size("proc", procs_count + 1, "Processors to use");
     char** naredifile = flag_str("naredi", "Naredifile", "Path to Naredifile");
 
     if (!flag_parse(argc, argv)) {
@@ -91,10 +95,14 @@ int main(int argc, char** argv) {
             da_append(&rules, rule);
         } while (true);
 
-        da_foreach(&rules, Naredi_Rule, rule) {
-            pid_t pid = naredi_rule_start(*rule);
-            if (pid == -1) return 1;
-            if (!naredi_rule_wait(pid)) return 1;
+        Naredi_Jobs jobs = {0};
+        defer(da_free(&jobs)) {
+            da_foreach(&rules, Naredi_Rule, rule) {
+                pid_t pid = naredi_rule_start(&jobs, *procs_to_use, *rule);
+                if (pid == -1) return 1;
+            }
+
+            if (!naredi_jobs_wait(&jobs)) return 1;
         }
 
         da_foreach(&rules, Naredi_Rule, rule) {

@@ -1,8 +1,17 @@
 #ifndef RULE_H
 #define RULE_H
 
+#include <sys/types.h>
+
 #include "common.h"
 #include "lexer.h"
+
+typedef struct {
+    pid_t* items;
+    size_t count, capacity;
+}Naredi_Jobs;
+
+bool naredi_jobs_wait(Naredi_Jobs* jobs);
 
 typedef struct {
     Naredi_Small_String out;
@@ -19,7 +28,7 @@ typedef struct {
 void naredi_rule_destroy(Naredi_Rule* rule);
 bool naredi_parse_rule(Naredi_Lexer* lexer, Naredi_Rule* out_rule);
 
-pid_t naredi_rule_start(Naredi_Rule rule);
+pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rule rule);
 bool naredi_rule_wait(pid_t pid);
 
 #endif // RULE_H

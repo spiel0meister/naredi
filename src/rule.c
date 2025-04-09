@@ -9,6 +9,19 @@
 #include "common.h"
 #include "lexer.h"
 
+bool naredi_jobs_wait(Naredi_Jobs* jobs) {
+    for (size_t i = 0; i < jobs->count; ++i) {
+        if (!naredi_rule_wait(jobs->items[i])) {
+            eprintf("Couldn't wait for job\n");
+            return false;
+        }
+
+        da_remove(jobs, i);
+        i--;
+    }
+    return true;
+}
+
 void naredi_rule_destroy(Naredi_Rule* rule) {
     da_free(&rule->in);
     da_free(&rule->deps);
@@ -48,7 +61,10 @@ bool naredi_parse_rule(Naredi_Lexer* lexer, Naredi_Rule* out_rule) {
     return false;
 }
 
-pid_t naredi_rule_start(Naredi_Rule rule) {
+pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rule rule) {
+    if (jobs->count >= procs_to_use) 
+        if (!naredi_jobs_wait(jobs)) return -1;
+
     Str_Array copy = {0};
 
     da_foreach(&rule.cmd, Naredi_Small_String, arg) {
@@ -85,6 +101,8 @@ pid_t naredi_rule_start(Naredi_Rule rule) {
         free(*arg);
     }
     da_free(&copy);
+
+    da_append(jobs, pid);
     return pid;
 }
 
