@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
     if (!flag_parse(argc, argv)) {
         eprintf("Couldn't parse args\n");
         flag_print_error(stderr);
+        usage(stderr);
         return 1;
     }
 
