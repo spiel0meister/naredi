@@ -20,7 +20,7 @@
 #define FLAG_IMPLEMENTATION
 #include "external/flag.h"
 
-#define NAREDI_VERSION "0.0.3"
+#define NAREDI_VERSION "0.0.4"
 
 char* naredi_read_file(const char* filepath, int* out_size) {
     FILE* f = fopen(filepath, "rb");
