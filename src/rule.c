@@ -70,7 +70,28 @@ Naredi_Rule* naredi_find_rule_for_out(Naredi_Rules* rules, Naredi_Small_String o
     return NULL;
 }
 
+bool naredi_need_to_execute_rule(Naredi_Rule* rule) {
+    da_foreach(&rule->in, Naredi_Small_String, in) {
+        if (is_file1_modified_after_file2_small_string(*in, rule->out)) {
+            return true;
+        }
+    }
+
+    da_foreach(&rule->deps, Naredi_Small_String, dep) {
+        if (is_file1_modified_after_file2_small_string(*dep, rule->out)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rules* rules, Naredi_Rule rule) {
+    if (!naredi_need_to_execute_rule(&rule)) {
+        printf("No need to build `%s`\n", rule.out.value);
+        return 0;
+    }
+
     if (jobs->count >= procs_to_use) 
         if (!naredi_jobs_wait(jobs)) return -1;
 
@@ -81,8 +102,10 @@ pid_t naredi_rule_start(Naredi_Jobs* jobs, size_t procs_to_use, Naredi_Rules* ru
             if (strcmp(arg->value, "$in") == 0) {
                 da_foreach(&rule.in, Naredi_Small_String, in) {
                     Naredi_Rule* dep_rule = naredi_find_rule_for_out(rules, *in);
-                    if (dep_rule != NULL)
+                    // Hell
+                    if (dep_rule != NULL) {
                         if (naredi_rule_start(jobs, procs_to_use, rules, *dep_rule) < 0) return -1;
+                    }
                     da_append(&copy, naredi_small_string_to_cstr(*in));
                 }
             } else if (strcmp(arg->value, "$out") == 0) {

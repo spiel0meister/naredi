@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/stat.h>
+
 #include "common.h"
 
 void naredi_cmd_render(Str_Array cmd) {
@@ -45,5 +47,31 @@ char* naredi_small_string_to_cstr(Naredi_Small_String string) {
     char* copy = malloc(sizeof(string.value));
     memcpy(copy, string.value, sizeof(string.value));
     return copy;
+}
+
+bool is_file1_modified_after_file2(const char* filepath1, const char* filepath2) {
+    struct stat st;
+
+    if (stat(filepath1, &st) < 0) {
+        eprintf("Couldn't stat %s: %s\n", filepath1, strerror(errno));
+        return false;
+    }
+
+    time_t file1_time = st.st_mtim.tv_sec;
+    if (stat(filepath2, &st) < 0) {
+        return true;
+    }
+
+    return file1_time > st.st_mtim.tv_sec;
+}
+
+bool is_file1_modified_after_file2_small_string(Naredi_Small_String filepath1, Naredi_Small_String filepath2) {
+    char* filepath1c = naredi_small_string_to_cstr(filepath1);
+    char* filepath2c = naredi_small_string_to_cstr(filepath2);
+    bool result = is_file1_modified_after_file2(filepath1c, filepath2c);
+
+    free(filepath1c);
+    free(filepath2c);
+    return result;
 }
 

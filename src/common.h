@@ -2,8 +2,10 @@
 #define COMMON_H
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <assert.h>
 #include <stddef.h>
+#include <errno.h>
 
 #define eprintf(fmt, ...) fprintf(stderr, fmt __VA_OPT__(,) __VA_ARGS__)
 
@@ -47,5 +49,8 @@ typedef struct {
 Naredi_Small_String naredi_small_string_from_cstr(const char* str);
 Naredi_Small_String naredi_small_string_from_sized(const char* start, int len);
 char* naredi_small_string_to_cstr(Naredi_Small_String string);
+
+bool is_file1_modified_after_file2(const char* filepath1, const char* filepath2);
+bool is_file1_modified_after_file2_small_string(Naredi_Small_String filepath1, Naredi_Small_String filepath2);
 
 #endif // COMMON_H

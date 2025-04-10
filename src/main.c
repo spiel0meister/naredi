@@ -113,7 +113,9 @@ int main(int argc, char** argv) {
         defer(da_free(&jobs)) {
             pid_t pid = naredi_rule_start(&jobs, *procs_to_use, &rules, *rule_to_do);
             if (pid < 0) return 1;
-            if (!naredi_jobs_wait(&jobs)) return 1;
+            else if (pid > 0) {
+                if (!naredi_jobs_wait(&jobs)) return 1;
+            }
         }
 
         da_foreach(&rules, Naredi_Rule, rule) {
